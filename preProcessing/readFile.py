@@ -1,4 +1,4 @@
-emp_df = spark.read.csv("employee.txt", header=True)
+emp_df = spark.read.csv("./../data/employee.txt", header=True)
 emp_df.schema
 emp_df.printSchema()
 emp_df.columns
