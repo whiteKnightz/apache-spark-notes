@@ -1,0 +1,43 @@
+from pyspark.sql.functions import *
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.feature import StringIndexer
+
+
+iris_df = spark.read.csv("/../data/iris.data", inferSchema=True)
+iris_df.show()
+
+iris_df = iris_df.select(col("_c0").alias("sepal_length"),
+                         col("_c1").alias("sepal_width"),
+                         col("_c2").alias("petal_length"),
+                         col("_c3").alias("petal_width"),
+                         col("_c4").alias("species")
+                         )
+
+vectorAssembler = VectorAssembler(inputCols=["sepal_length", "sepal_width", "petal_length", "petal_width"], outputCol="features")
+viris_df = vectorAssembler.transform(iris_df)
+
+
+indexer = StringIndexer(inputCol="species", outputCol="label")
+iviris_df = indexer.fit(viris_df).transform(viris_df)
+iviris_df.show()
+
+
+
+from pyspark.ml.classification import NaiveBayes
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+
+
+splits = iviris_df.randomSplit([0.6,0.4], 1)
+train_df = splits[0]
+test_df = splits[1]
+
+nb =  NaiveBayes(modelType="multinomial")
+
+nbmodel = nb.fit(tra
+nbmodel = nb.fit(train_df)
+predictions_df = nbmodel.transform(test_df)
+
+
+evaluator = MulticlassClassificationEvaluator(labelCol = "label", predictionCol = "prediction", metricName = "accuracy")
+nbaccuracy = evaluator.evaluate(predictions_df)
+nbaccuracy
